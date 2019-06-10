@@ -26,6 +26,10 @@ libutf8proc.a: utf8proc/utf8proc.[ch] utf8proc/utf8proc_data.c
 	make -C utf8proc libutf8proc.a
 	mv utf8proc/libutf8proc.a $@
 
+clean-libutf8proc:
+	rm -f libutf8proc.a
+	make -C utf8proc clean
+
 #manfmt: $(PROG).$(MANSEC).html $(PROG).$(MANSEC).md $(PROG).$(MANSEC).txt
 manfmt: $(PROG).$(MANSEC).html $(PROG).$(MANSEC).txt
 
@@ -70,9 +74,11 @@ wordlist.h: wordlist/*
 vectors.c: $(VECTORSRC)
 	./mkvectors.sh > $@
 
-clean:
-	rm -f $(PROG) $(OBJS) wordlist.h \
-		$(PROG).$(MANSEC).html $(PROG).$(MANSEC).md $(PROG).$(MANSEC).txt
+clean: clean-libutf8proc
+	rm -f $(PROG) $(OBJS) wordlist.h
+
+distclean: clean
+	rm -f $(PROG).$(MANSEC).html $(PROG).$(MANSEC).md $(PROG).$(MANSEC).txt vectors.c
 
 check: $(PROG)
 	./$(PROG) -T
