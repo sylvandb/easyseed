@@ -132,18 +132,42 @@ static const char ascii_space[] = " ";
  */
 static const struct wordlist wordlists[] =
 {
+#ifdef ENGLISH
 	LANG(english,			u8"English",	"en",	ascii_space, 1),
+#endif
+#ifdef CHINESE_SIMPLIFIED
 	LANG(chinese_simplified,	u8"汉语",	"zh-CN",ascii_space, 1),
+#endif
+#ifdef CHINESE_TRADITIONAL
 	LANG(chinese_traditional,	u8"漢語",	"zh-TW",ascii_space, 1),
+#endif
+#ifdef CZECH
 	LANG(czech,			u8"Čeština",	"cz",	ascii_space, 0),
+#endif
+#ifdef FRENCH
 	LANG(french,			u8"Français",	"fr",	ascii_space, 1),
+#endif
+#ifdef INDONESIAN
 	LANG(indonesian,	u8"Bahasa Indonesia",	"id",	ascii_space, 0),
+#endif
+#ifdef ITALIAN
 	LANG(italian,			u8"Italiano",	"it",	ascii_space, 1),
+#endif
+#ifdef JAPANESE
 	LANG(japanese,			u8"日本語",	"ja",	u8"\u3000",  1),
+#endif
+#ifdef KOREAN
 	LANG(korean,			u8"한국어",	"ko",	ascii_space, 1),
+#endif
+#ifdef RUSSIAN
 	LANG(russian,			u8"Русский",	"ru",	ascii_space, 0),
+#endif
+#ifdef SPANISH
 	LANG(spanish,			u8"Español",	"es",	ascii_space, 1),
+#endif
+#ifdef UKRAINIAN
 	LANG(ukrainian,			u8"Українська",	"uk",	ascii_space, 0),
+#endif
 };
 
 #undef LANG

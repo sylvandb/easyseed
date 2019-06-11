@@ -10,6 +10,7 @@
  * https://github.com/bip32JP/bip32JP.github.io/blob/57f451fc785387c72e5b0b8db0f6b7c2b064c362/test_EN_BIP39.json
  */
 
+#ifdef ENGLISH
 static const struct testent english_vectors[] = {
 	{
 		.bits = 128,
@@ -300,6 +301,7 @@ static const struct testent english_vectors[] = {
 		.bip32_xprv = "xprv9s21ZrQH143K2WFF16X85T2QCpndrGwx6GueB72Zf3AHwHJaknRXNF37ZmDrtHrrLSHvbuRejXcnYxoZKvRquTPyp2JiNG3XcjQyzSEgqCB"
 	},
 };
+#endif /* english */
 
 /*
  * Japanese vectors, from:
@@ -307,6 +309,7 @@ static const struct testent english_vectors[] = {
  * https://github.com/bip32JP/bip32JP.github.io/blob/360c05a6439e5c461bbe5e84c7567ec38eb4ac5f/test_JP_BIP39.json
  */
 
+#ifdef JAPANESE
 static const struct testent japanese_vectors[] = {
 	{
 		.bits = 128,
@@ -501,10 +504,16 @@ static const struct testent japanese_vectors[] = {
 		.bip32_xprv = "xprv9s21ZrQH143K2qVq43Phs1xyVc6jSxXHWJ6CDJjod3cgyEin7hgeQV6Dkw6s1LSfMYxoah4bPAnW4wmXfDUS9ghBEM18xoY634CBtX8HPrA"
 	},
 };
+#endif /* japanese */
+
 
 const struct testentvec testvec[] = {
+#ifdef ENGLISH
 	{ .ntests = 36, .lang = "english", .v = english_vectors },
-	{ .ntests = 24, .lang = "japanese", .v = japanese_vectors }
+#endif
+#ifdef JAPANESE
+	{ .ntests = 24, .lang = "japanese", .v = japanese_vectors },
+#endif
 };
 
-const size_t ntestlangs = 2;
+const size_t ntestlangs = sizeof(testvec)/sizeof(*testvec);
