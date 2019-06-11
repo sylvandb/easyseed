@@ -1113,9 +1113,28 @@ hexenc(char *h, const unsigned char *bin, size_t len)
 	*h = '\0';
 }
 
+static void
+output_json(int json, const char *nm, const char *vl)
+{
+	static int next = 0;
+	char *pfx;
+
+	if (!nm) {
+		next = 0;
+		if (json) printf("}\n");
+		return;
+	}
+	if (json) {
+		printf("%s\"%s\": \"%s\"", next ? ", " : "{", nm, vl);
+		next = 1;
+	} else {
+		printf("%s:\n%s\n\n", nm, vl);
+	}
+}
+
 static int
 make_all_clean(unsigned nbits, const struct wordlist *wl, const char *keymat,
-	int p_flag, const char *pfile, int E_flag, int D_flag)
+	int p_flag, const char *pfile, int E_flag, int D_flag, int json)
 {
 	void *buf;
 	size_t buflen;
@@ -1162,7 +1181,7 @@ make_all_clean(unsigned nbits, const struct wordlist *wl, const char *keymat,
 	}
 
 	hexenc(hexbuf, entropy, nbytes);
-	printf("Entropy:\n%s\n\n", hexbuf);
+	output_json(json, "Entropy", hexbuf);
 
 	error = mkseed(seed, mnemonic, passphrase);
 	if (error)
@@ -1176,13 +1195,15 @@ make_all_clean(unsigned nbits, const struct wordlist *wl, const char *keymat,
 		goto done3;
 	}
 
-	printf("Mnemonic:\n%s\n\n", mnemonic);
+	output_json(json, "Mnemonic", mnemonic);
 	if (D_flag)
-		printf("Passphrase:\n%s\n\n", passphrase);
-	printf("Seed:\n%s\n\n", hexbuf);
+		output_json(json, "Passphrase", passphrase);
+	output_json(json, "Seed", hexbuf);
 	if (!E_flag)
-		printf("Master Extended Private Key:\n%s\n", xprv);
+		output_json(json, "Master Extended Private Key", xprv);
 	else {
+		if (json)
+			printf(", {\"electrum\": \"\n");
 		printf(	"### Multiple formats of extended private key "
 			"for use with Electrum.\n");
 		printf("### USE ONLY ONE OF THESE!\n\n");
@@ -1201,8 +1222,12 @@ make_all_clean(unsigned nbits, const struct wordlist *wl, const char *keymat,
 		}
 		printf(u8"Segwit Bech32 New/Future Format "
 			u8"(“Bravo Charlie One”):\n%s\n", xprv);
+		if (json)
+			printf("\n\"}");
 	}
 
+	output_json(json, NULL, NULL);
+	json = 0;
 	error = fflush(stdout);
 	if (error)
 		warn("Unable to write to stdout");
@@ -1217,6 +1242,7 @@ done2:
 done1:
 	sfree(mnemonic, mlen);
 	sfree(entropy, nbytes);
+	output_json(json, NULL, NULL);
 done:
 	zeroize(passbuf, sizeof(passbuf));
 	sfree(buf, buflen);
@@ -1295,9 +1321,10 @@ main(int argc, char *argv[])
 	ssize_t len;
 
 	opterr = 0;
-	while ((ch = getopt(argc, argv, ":ADLEOPTWb:j:k:l:p")) > -1) {
+	while ((ch = getopt(argc, argv, ":ADJLEOPTWhb:j:k:l:p")) > -1) {
 		switch (ch) {
 		case 'A':
+		case 'J':
 		case 'L':
 		case 'P':
 		case 'T':
@@ -1340,6 +1367,8 @@ main(int argc, char *argv[])
 		case 'p':
 			p_flag = 1;
 			break;
+		case 'h':
+			usage();
 		default:
 			errx(1, "Unknown option: -%c", (char)ch);
 		}
@@ -1353,7 +1382,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (mode_flag == 'A') {
+	if (mode_flag == 'A' || mode_flag == 'J') {
 		if (p_flag && pfile != NULL) {
 			warnx(
 	"Passphrase cannot be read from both file (-j) and terminal (-p)");
@@ -1397,9 +1426,9 @@ main(int argc, char *argv[])
 	if (mode_flag == 'T')
 		return (0);
 
-	if (mode_flag == 'A')
+	if (mode_flag == 'A' || mode_flag == 'J')
 		error = make_all_clean(nbits, wl, keymat, p_flag, pfile,
-			E_flag, D_flag);
+			E_flag, D_flag, mode_flag == 'J');
 	else {
 		assert(mode_flag == '\0');
 
@@ -1430,7 +1459,7 @@ usage(void)
 
 	fprintf(stderr,
 		"# General usage:\n"
-		"easyseed -b bits [-k file] [-l lang] [-A [-j passfile | -p]]\n"
+		"easyseed -b bits [-k file] [-l lang] [-A | -J [-j passfile | -p]]\n"
 		"# Valid values for bits: { 128, 160, 192, 224, 256 }\n"
 		"# If given, file length must match bits. \"-\" for stdin.\n"
 		"# List languages:\n"
